@@ -1,0 +1,32 @@
+{
+  "name": "@decision-engine/web",
+  "version": "0.1.0",
+  "description": "WebGPU and WebAssembly inference for Decision Engine JS",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/p-rk/decision-engine-js.git",
+    "directory": "packages/web"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@decision-engine/core": "0.1.0",
+    "onnxruntime-web": "^1.30.0"
+  }
+}

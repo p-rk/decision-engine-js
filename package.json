@@ -1,0 +1,45 @@
+{
+  "name": "decision-engine-js",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Fast local structured decisions for Node.js, Bun, and the web",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/p-rk/decision-engine-js.git"
+  },
+  "homepage": "https://github.com/p-rk/decision-engine-js#readme",
+  "bugs": {
+    "url": "https://github.com/p-rk/decision-engine-js/issues"
+  },
+  "type": "module",
+  "packageManager": "bun@1.4.2",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "setup": "bun run apps/setup.ts",
+    "build": "bun run --cwd packages/core build && bun run --cwd packages/node build && bun run --cwd packages/web build",
+    "clean": "bun run --filter '*' clean",
+    "test": "bun test packages/core/src",
+    "test:training": "uv run --project conversion python -m unittest discover -s training -p 'test_*.py'",
+    "typecheck": "bun run --cwd packages/core build && bun run --cwd packages/node typecheck && bun run --cwd packages/web typecheck && tsc -p apps/demo/tsconfig.json",
+    "validate:data": "python3 training/validate.py training/example.jsonl && python3 training/validate.py training/department.jsonl",
+    "train:model": "uv run --project conversion training/train.py training/department.jsonl",
+    "export:trained": "uv run --project conversion conversion/export_onnx.py --checkpoint models/laya-finetuned --output models/laya-finetuned-onnx",
+    "convert:model": "uv run --project conversion conversion/export_onnx.py",
+    "classify": "bun run packages/node/src/cli.ts --model models/laya-english-fp32",
+    "classify:node": "node packages/node/dist/cli.js --model models/laya-english-fp32",
+    "demo": "bun run build && bun run apps/demo/server.ts",
+    "benchmark": "bun run build && bun run apps/benchmark.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.9",
+    "@types/node": "^24.5.2",
+    "typescript": "^5.9.2"
+  },
+  "engines": {
+    "bun": ">=1.4.0",
+    "node": ">=20"
+  }
+}

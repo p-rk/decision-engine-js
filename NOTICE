@@ -1,0 +1,11 @@
+Decision Engine JS
+
+This project implements a portable ONNX runtime for Laya-compatible typed-decision models.
+
+Laya models, architecture, and the original Python implementation are by Convai Innovations
+and contributors:
+https://github.com/NandhaKishorM/laya
+https://huggingface.co/convaiinnovations/laya
+
+The model and original project are distributed under the Apache License, Version 2.0.
+Generated model artifacts are not included in this source repository.

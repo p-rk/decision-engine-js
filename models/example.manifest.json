@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "model": {
+    "id": "decision-engine-js/example",
+    "format": "onnx",
+    "precision": "int8"
+  },
+  "files": {
+    "model": "model.int8.onnx",
+    "tokenizer": "tokenizer.json",
+    "config": "config.json"
+  },
+  "inference": {
+    "maxLength": 512,
+    "headMaxLength": 192,
+    "inputs": {
+      "inputIds": "input_ids",
+      "attentionMask": "attention_mask",
+      "markerPositions": "marker_pos",
+      "markerMask": "marker_mask",
+      "questionTypes": "qtype"
+    },
+    "outputs": {
+      "logits": "logits",
+      "actionLogits": "action"
+    }
+  },
+  "calibration": {
+    "temperatures": [
+      1,
+      1,
+      1
+    ],
+    "temperaturesByOptions": {}
+  }
+}

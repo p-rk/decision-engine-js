@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:decision-engine-js:training-record:v1",
+  "title": "Decision Engine JS training record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "state",
+    "question",
+    "target",
+    "split"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "state": {
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "object"
+        },
+        {
+          "type": "array"
+        }
+      ]
+    },
+    "question": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "instructions",
+            "criteria"
+          ],
+          "properties": {
+            "type": {
+              "const": "choice"
+            },
+            "instructions": {
+              "type": "string",
+              "minLength": 1
+            },
+            "criteria": {
+              "oneOf": [
+                {
+                  "type": "array",
+                  "minItems": 2,
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                {
+                  "type": "object",
+                  "minProperties": 2
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "instructions",
+            "criteria"
+          ],
+          "properties": {
+            "type": {
+              "const": "score"
+            },
+            "instructions": {
+              "type": "string",
+              "minLength": 1
+            },
+            "criteria": {
+              "type": "array",
+              "minItems": 2
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "instructions"
+          ],
+          "properties": {
+            "type": {
+              "const": "noul"
+            },
+            "instructions": {
+              "type": "string",
+              "minLength": 1
+            },
+            "criteria": {
+              "type": "object",
+              "properties": {
+                "false": {},
+                "true": {}
+              }
+            }
+          }
+        }
+      ]
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "choice": {
+          "type": "string"
+        },
+        "score": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "noul": {
+          "type": "boolean"
+        },
+        "action": {
+          "enum": [
+            "answer",
+            "escalate"
+          ]
+        }
+      },
+      "minProperties": 1
+    },
+    "split": {
+      "enum": [
+        "train",
+        "validation",
+        "test"
+      ]
+    },
+    "metadata": {
+      "type": "object"
+    }
+  }
+}

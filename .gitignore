@@ -1,0 +1,10 @@
+node_modules/
+dist/
+coverage/
+.venv/
+__pycache__/
+*.pyc
+models/*
+!models/example.manifest.json
+training/runs/
+*.onnx

@@ -1,0 +1,39 @@
+{
+  "name": "@decision-engine/node",
+  "version": "0.1.0",
+  "description": "Native ONNX inference for Decision Engine JS on Node.js and Bun",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/p-rk/decision-engine-js.git",
+    "directory": "packages/node"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "bin": {
+    "decision-engine": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "4.3.0",
+    "@decision-engine/core": "0.1.0",
+    "onnxruntime-node": "^1.30.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
