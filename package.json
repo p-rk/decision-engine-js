@@ -18,7 +18,7 @@
     "packages/*"
   ],
   "scripts": {
-    "setup": "bun run apps/setup.ts",
+    "setup": "bun install --frozen-lockfile && bun run apps/setup.ts",
     "build": "bun run --cwd packages/core build && bun run --cwd packages/node build && bun run --cwd packages/web build",
     "clean": "bun run --filter '*' clean",
     "test": "bun test packages/core/src",

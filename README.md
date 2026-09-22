@@ -19,7 +19,6 @@ Clone the repository, install dependencies, download the verified model, and sta
 ```bash
 git clone https://github.com/p-rk/decision-engine-js.git
 cd decision-engine-js
-bun install
 bun run setup
 bun run demo
 ```
@@ -28,7 +27,7 @@ Open <http://localhost:3000>. The playground includes Choose, Score, Noul, Route
 workflows. Results include probabilities, confidence, model-loading wait, inference time, and
 total request time. The server loads the model once at startup and reuses it for every request.
 
-`bun run setup` streams the model from
+`bun run setup` installs the locked Bun dependencies, then streams the model from
 [`p-rk/decision-engine-laya-onnx`](https://huggingface.co/p-rk/decision-engine-laya-onnx),
 pins the published revision, and verifies the ONNX file against the SHA-256 in its manifest.
 Use `bun run setup --force` to replace an existing download. Set `MODEL_DIR` to choose another
