@@ -465,7 +465,7 @@
           </fieldset>
 
           <div class="actions">
-            <span class="hint">Runs locally. Press ⌘/Ctrl + Enter.</span>
+            <span id="run-hint" class="hint">Runs locally. Press ⌘/Ctrl + Enter.</span>
             <button id="submit" type="submit">Run</button>
           </div>
         </form>
@@ -579,6 +579,7 @@
       const criteriaLabel = document.querySelector("#criteria-label");
       const criteria = document.querySelector("#criteria");
       const addCriterion = document.querySelector("#add-criterion");
+      const runHint = document.querySelector("#run-hint");
       const submit = document.querySelector("#submit");
       const error = document.querySelector("#error");
       const result = document.querySelector("#result");
@@ -591,6 +592,11 @@
       const timings = document.querySelector("#timings");
       const tabs = [...document.querySelectorAll(".tab")];
       let activeMode = "choose";
+      let liveTimer;
+      let liveRequestRunning = false;
+      let liveRequestPending = false;
+      let manualRequestRunning = false;
+      let liveGeneration = 0;
 
       function activeConfig() {
         return modes[activeMode];
@@ -619,6 +625,7 @@
           if (criteria.children.length > 2) {
             row.remove();
             updateCriterionRows();
+            scheduleLiveDecision();
           }
         });
 
@@ -641,6 +648,9 @@
       }
 
       function selectMode(mode) {
+        clearTimeout(liveTimer);
+        liveGeneration += 1;
+        liveRequestPending = false;
         activeMode = mode;
         const config = activeConfig();
         tabs.forEach((tab) => {
@@ -662,7 +672,12 @@
         addCriterion.hidden = config.type === "noul";
         criteria.replaceChildren();
         config.criteria.forEach(addCriterionRow);
-        submit.textContent = config.submit;
+        submit.textContent = liveRequestRunning ? "Finishing…" : config.submit;
+        submit.disabled = liveRequestRunning || manualRequestRunning;
+        runHint.textContent =
+          mode === "choose"
+            ? "Live mode: updates after you pause typing."
+            : "Runs locally. Press ⌘/Ctrl + Enter.";
         result.style.display = "none";
         error.hidden = true;
       }
@@ -807,6 +822,78 @@
         return body;
       }
 
+      async function requestDecision() {
+        const batch = activeMode === "batch";
+        const response = await fetch(batch ? "/api/batch" : "/api/decide", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestBody()),
+        });
+        const payload = await response.json();
+        if (!response.ok) {
+          throw new Error(payload.error || `Request failed (${response.status})`);
+        }
+        return { batch, payload };
+      }
+
+      function scheduleLiveDecision() {
+        if (activeMode !== "choose") {
+          return;
+        }
+        clearTimeout(liveTimer);
+        liveGeneration += 1;
+        liveRequestPending = true;
+        if (!form.checkValidity()) {
+          return;
+        }
+        liveTimer = setTimeout(runLiveDecision, 300);
+      }
+
+      async function runLiveDecision() {
+        if (
+          activeMode !== "choose" ||
+          !liveRequestPending ||
+          !form.checkValidity() ||
+          manualRequestRunning
+        ) {
+          return;
+        }
+        if (liveRequestRunning) {
+          return;
+        }
+
+        liveRequestRunning = true;
+        liveRequestPending = false;
+        const generation = liveGeneration;
+        error.hidden = true;
+        submit.disabled = true;
+        submit.textContent = "Updating…";
+
+        try {
+          const { payload } = await requestDecision();
+          if (activeMode === "choose" && generation === liveGeneration) {
+            renderSingle(payload);
+            result.style.display = "block";
+          }
+        } catch (requestError) {
+          if (activeMode === "choose" && generation === liveGeneration) {
+            error.textContent = requestError instanceof Error
+              ? requestError.message
+              : "Request failed";
+            error.hidden = false;
+          }
+        } finally {
+          liveRequestRunning = false;
+          submit.disabled = manualRequestRunning;
+          submit.textContent = manualRequestRunning
+            ? "Running…"
+            : activeConfig().submit;
+          if (activeMode === "choose" && liveRequestPending) {
+            void runLiveDecision();
+          }
+        }
+      }
+
       tabs.forEach((tab) => {
         tab.addEventListener("click", () => selectMode(tab.dataset.mode));
         tab.addEventListener("keydown", (event) => {
@@ -821,27 +908,27 @@
         });
       });
 
-      addCriterion.addEventListener("click", () => addCriterionRow());
+      addCriterion.addEventListener("click", () => {
+        addCriterionRow();
+        scheduleLiveDecision();
+      });
+
+      form.addEventListener("input", scheduleLiveDecision);
 
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
+        clearTimeout(liveTimer);
+        liveGeneration += 1;
+        liveRequestPending = false;
         const idleLabel = activeConfig().submit;
+        manualRequestRunning = true;
         error.hidden = true;
         result.style.display = "none";
         submit.disabled = true;
         submit.textContent = "Running…";
 
         try {
-          const batch = activeMode === "batch";
-          const response = await fetch(batch ? "/api/batch" : "/api/decide", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(requestBody()),
-          });
-          const payload = await response.json();
-          if (!response.ok) {
-            throw new Error(payload.error || `Request failed (${response.status})`);
-          }
+          const { batch, payload } = await requestDecision();
           batch ? renderBatch(payload) : renderSingle(payload);
           result.style.display = "block";
         } catch (requestError) {
@@ -850,8 +937,12 @@
             : "Request failed";
           error.hidden = false;
         } finally {
-          submit.disabled = false;
-          submit.textContent = idleLabel;
+          manualRequestRunning = false;
+          submit.disabled = liveRequestRunning;
+          submit.textContent = liveRequestRunning ? "Updating…" : idleLabel;
+          if (activeMode === "choose" && liveRequestPending) {
+            void runLiveDecision();
+          }
         }
       });
 
