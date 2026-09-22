@@ -20,6 +20,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.5.29"
+          enable-cache: true
+          cache-dependency-glob: "conversion/uv.lock"
       - run: bun install --frozen-lockfile
       - run: bun test
       - run: bun run typecheck
